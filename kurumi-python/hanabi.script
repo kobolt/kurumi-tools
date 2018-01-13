@@ -1,0 +1,11 @@
+red on
+sleep 50
+red off
+sleep 50
+green on
+blue on
+sleep 100
+green off
+sleep 100
+blue off
+sleep 500
