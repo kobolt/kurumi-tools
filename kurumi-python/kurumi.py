@@ -14,6 +14,7 @@ class Kurumi(object):
 		self.s.rtscts = False
 		self.s.dsrdtr = False
 
+		self.s.setDTR(False)
 		self.s.open()
 		self.s.flushInput()
 		self.s.flushOutput()
@@ -40,12 +41,57 @@ class Kurumi(object):
 				self._command("%s %s" % (line_no, line.strip()))
 		self._command("run")
 
+	def blink(self, times):
+		self._command("stop")
+		self._command("red off")
+		self._command("green off")
+		self._command("blue off")
+		self._command("clear")
+		line_no = 0
+
+		if times >= 25:
+			for i in range(0, times / 25):
+				self._command("%s red on"    % (line_no))
+				self._command("%s sleep 100" % (line_no + 1))
+				self._command("%s red off"   % (line_no + 2))
+				self._command("%s sleep 100" % (line_no + 3))
+				line_no += 4
+			times = times % 25
+
+		if times >= 5:
+			for i in range(0, times / 5):
+				self._command("%s green on"  % (line_no))
+				self._command("%s sleep 100" % (line_no + 1))
+				self._command("%s green off" % (line_no + 2))
+				self._command("%s sleep 100" % (line_no + 3))
+				line_no += 4
+			times = times % 5
+
+		for i in range(0, times):
+			self._command("%s blue on"   % (line_no))
+			self._command("%s sleep 100" % (line_no + 1))
+			self._command("%s blue off"  % (line_no + 2))
+			self._command("%s sleep 100" % (line_no + 3))
+			line_no += 4
+
+		self._command("%s sleep 1000" % (line_no))
+		self._command("run")
+
 if __name__ == "__main__":
 	import sys
 	k = Kurumi("/dev/ttyUSB0")
 
 	if len(sys.argv) > 1:
-		k.script(sys.argv[1])
+		try:
+			times = int(sys.argv[1])
+		except ValueError:
+			times = None
+
+		if times == None:
+			k.script(sys.argv[1])
+		else:
+			k.blink(times)
+
 	else:
-		print "Usage: %s <script file>" % (sys.argv[0])
+		print "Usage: %s <script file | times to blink>" % (sys.argv[0])
 
